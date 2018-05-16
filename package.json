@@ -1,0 +1,28 @@
+{
+  "name": "chunkstreamreader",
+  "version": "1.0.0",
+  "description": "Read chunks from a binary file.",
+  "main": "dist/app.js",
+  "scripts": {
+    "test": "node dist/app.js"
+  },
+  "keywords": [
+    "binary",
+    "stream",
+    "reader",
+    "chunk"
+  ],
+  "author": "smc",
+  "license": "ISC",
+  "devDependencies": {
+    "event-stream": "^3.3.4",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-jshint": "^2.1.0",
+    "jshint": "^2.9.5",
+    "jshint-stylish": "^2.2.1"
+  },
+  "dependencies": {
+    "atob": "^2.1.1"
+  }
+}

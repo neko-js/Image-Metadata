@@ -1,0 +1,1 @@
+var atob = require('atob');
