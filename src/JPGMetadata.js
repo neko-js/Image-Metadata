@@ -92,8 +92,8 @@ let JPGMetadata;
 			};
 
 			// Calculate compression ratio by comparing raw data size and file size of the SOS chunk
-			info.raw_data_size = info.image_width * info.image_height * info.colordepth/8;
 			info.data_size = this.chunks.SOS.distance[0];
+			info.raw_data_size = info.image_width * info.image_height * info.colordepth/8;
 			info.compression = Math.round((1 - info.data_size / info.raw_data_size) * 100 * 100) / 100;
 
 			return info;

@@ -30,14 +30,7 @@ class PNGMetadata {
 			.filter(x => x.name === 'IDAT')
 			.map(x => x.size)
 			.reduce((a, b) => a + b);
-		let colorspace_bytes = {
-			'Greyscale': 1,
-			'RGB': 3,
-			'Palette': 3,
-			'GreyscaleAlpha': 2,
-			'RGBA': 4
-		};
-		info.raw_data_size = info.image_width * info.image_height * colorspace_bytes[info.colorspace];
+		info.raw_data_size = info.image_width * info.image_height * info.colordepth;
 		info.compression = Math.round((1 - info.data_size / info.raw_data_size) * 100 * 100) / 100;
 
 		return info;
