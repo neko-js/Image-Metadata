@@ -7,10 +7,11 @@ console.log(pmd.getChunks());
 */
 
 /* JPG */
-var dataUri = base64_encode('test_images/IPTC-PhotometadataRef-Std2017.1.jpg');
+var dataUri = base64_encode('test_images/ShereFASTticket-Test.jpg');
 var jmd = new JPGMetadata(dataUri, 'dataURI');
-console.log(jmd.getChunks().APP1);
-console.log(jmd.getStructure());
+//console.log(jmd.getChunks().APP1);
+console.log('File Structure:', jmd.getStructure());
+console.log('Metadata:', jmd.getMetadata());
 // console.log(jmd.getChunks().SOF0);
 // console.log(jmd.info);
 

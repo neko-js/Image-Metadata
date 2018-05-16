@@ -184,15 +184,150 @@ let JPGMetadata;
 	class JPGMetadataClass {
 
 		constructor(data, type = 'byte') {
-			this.bsr = new ByteStreamReader(data, type);
-			this.readChunks();
-			this.parseChunks(this.chunk);
+			let bsr = new ByteStreamReader(data, type);
+			[this.chunks, this.structure] = this.readChunks(bsr);
+			this.parseChunks(this.chunks);
+		}
+
+		getChunks() {
+			return this.chunks;
+		}
+
+		getStructure(type = 'minimal') {
+			let structure = [...this.structure];
+			let chunks = this.getChunks();
+
+			// If file structure should be displayed verbose, put all chunks into structure.
+			if (type.toLowerCase() === 'verbose') {
+				structure.forEach((obj) => {
+					for (let key in chunks[obj.name]) {
+						if (['position', 'length', 'distance', 'data', 'data_raw'].includes(key)) {
+							obj[key] = chunks[obj.name][key][obj.index];
+						} else {
+							obj[key] = chunks[obj.name][key];
+						}
+					}
+				});
+			}
+			
+			// Calculate size of each chunk
+			structure.forEach((obj) => {
+				if(chunks[obj.name].distance[obj.index] > 0){
+					obj.size = chunks[obj.name].distance[obj.index];
+				}
+				else{
+					obj.size = 0;
+				}
+			});
+
+			return structure;
+		}
+
+		getMetadata(type = 'minimal') {
+			let info = {
+				image_width: this.chunks.SOF0.data[0].image_width,
+				image_height: this.chunks.SOF0.data[0].image_height,
+				colorspace: this.chunks.SOF0.data[0].components.id,
+				quality: this.chunks.DQT.quality,
+				comments: {}
+			};
+
+			for (let i = 0; i < 16; i++) {
+				let key = 'APP' + i;
+				if (this.chunks[key] !== undefined) {
+					info.comments[key] = {
+						size: this.chunks[key].size,
+					};
+				}
+			}
+
+			return info;
+		}
+
+		readChunks(bsr) {
+			let chunk = {};
+			let structure = [];
+			let ff,
+			xx,
+			name,
+			name_last_marker,
+			length,
+			position,
+			distance,
+			position_last_marker = 0;
+			while ((ff = bsr.readInt(1)) !== undefined) {
+				xx = bsr.readInt(1);
+
+				if (ff === 0xFF && ![0x00, 0xFF].includes(xx)) {
+					// name = ff.toString(16) + xx.toString(16);
+					name = JPGMarkers[xx];
+
+					if (name === undefined) {
+						console.log('Undefined JPG Marker:', ff.toString(16) + xx.toString(16));
+						continue;
+					}
+
+					if (chunk[name] === undefined) {
+						chunk[name] = {
+							position: [],
+							length: [],
+							distance: [],
+							data_raw: [],
+						};
+					}
+
+					chunk[name].length.push(bsr.readInt(2) - 2);
+					bsr.skip(-2);
+
+					position = bsr.getPosition() - 2;
+					distance = position - position_last_marker - 4;
+					chunk[name].position.push(position);
+
+					if (name_last_marker !== undefined) {
+						chunk[name_last_marker].distance.push(distance);
+					}
+					
+					// Skip compression data
+					if (name_last_marker !== undefined && name_last_marker !== 'SOS') {
+							bsr.skip(-distance - 2);
+							chunk[name_last_marker].data_raw.push(bsr.read(distance));
+							bsr.skip(+2);
+					}
+					if (name === 'SOS') {
+						// Skip to end - 1
+						bsr.setPosition(bsr.getLength() - 1);
+					}
+					
+					name_last_marker = name;
+					position_last_marker = position;
+
+					// Add information in linear structure
+					structure.push({
+						name: name,
+						index: chunk[name].length.length - 1
+					});
+				}
+
+				bsr.skip(-1);
+			}
+			return [chunk, structure];
 		}
 
 		parseChunks(chunks) {
 			this.parseSOF0(chunks.SOF0);
 			this.parseDQT(chunks.DQT);
 			this.parseAPP0(chunks.APP0);
+
+			// Calculate size for all chunks
+			for (let key in chunks) {
+				if (chunks[key].data_raw.length > 0) {
+					chunks[key].number = chunks[key].data_raw.length;
+					chunks[key].size = chunks[key].data_raw.map(a => a.length).reduce((a, b) => a + b);
+				} else {
+					chunks[key].number = 0;
+					chunks[key].size = 0;
+				}
+			}
 		}
 
 		parseAPP0(APP0) {
@@ -388,74 +523,6 @@ let JPGMetadata;
 				break;
 			}
 		}
-
-		readChunks() {
-			this.chunk = {};
-			this.structure = [];
-			var ff,
-			xx,
-			name,
-			name_last_marker,
-			length,
-			position,
-			distance,
-			position_last_marker = 0;
-			while ((ff = this.bsr.readInt(1)) !== undefined) {
-				xx = this.bsr.readInt(1);
-
-				if (ff === 0xFF && ![0x00, 0xFF].includes(xx)) {
-					// name = ff.toString(16) + xx.toString(16);
-					name = JPGMarkers[xx];
-
-					if (this.chunk[name] === undefined) {
-						this.chunk[name] = {
-							position: [],
-							length: [],
-							distance: [],
-							data_raw: [],
-						};
-					}
-					
-					this.chunk[name].length.push(this.bsr.readInt(2) - 2);
-					this.bsr.skip(-2);
-
-					position = this.bsr.getPosition() - 2;
-					distance = position - position_last_marker - 4;
-					this.chunk[name].position.push(position);
-
-					if (name_last_marker !== undefined) {
-						this.chunk[name_last_marker].distance.push(distance);
-					}
-
-					// Skip compression data
-					if (name === 'SOS') {
-						// Skip to end - 1
-						this.bsr.setPosition(this.bsr.getLength() - 1);
-					} else { 
-						if (name_last_marker !== undefined && name_last_marker !== 'SOS') {
-							this.bsr.skip(-distance - 2);
-							this.chunk[name_last_marker].data_raw.push(this.bsr.read(distance));
-							this.bsr.skip(+2);
-						}
-					}
-					
-					name_last_marker = name;
-					position_last_marker = position;
-					
-					// Add information in linear structure
-					this.structure.push({name: name, index: this.chunk[name].length.length});
-				}
-
-				this.bsr.skip(-1);
-			}
-		}
-
-		getChunks() {
-			return this.chunk;
-		}
-		getStructure(){
-			return this.structure;
-		}
 	}
 
 	JPGMetadata = JPGMetadataClass;
@@ -544,10 +611,11 @@ console.log(pmd.getChunks());
 */
 
 /* JPG */
-var dataUri = base64_encode('test_images/IPTC-PhotometadataRef-Std2017.1.jpg');
+var dataUri = base64_encode('test_images/ShereFASTticket-Test.jpg');
 var jmd = new JPGMetadata(dataUri, 'dataURI');
-console.log(jmd.getChunks().APP1);
-console.log(jmd.getStructure());
+//console.log(jmd.getChunks().APP1);
+console.log('File Structure:', jmd.getStructure());
+console.log('Metadata:', jmd.getMetadata());
 // console.log(jmd.getChunks().SOF0);
 // console.log(jmd.info);
 
