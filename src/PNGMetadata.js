@@ -30,7 +30,7 @@ class PNGMetadata {
 			.filter(x => x.name === 'IDAT')
 			.map(x => x.size)
 			.reduce((a, b) => a + b);
-		info.raw_data_size = info.image_width * info.image_height * info.colordepth;
+		info.raw_data_size = info.image_width * info.image_height * info.colordepth/8;
 		info.compression = Math.round((1 - info.data_size / info.raw_data_size) * 100 * 100) / 100;
 
 		return info;
