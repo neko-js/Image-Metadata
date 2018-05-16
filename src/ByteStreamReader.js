@@ -49,6 +49,22 @@ class ByteStreamReader {
 		}
 	}
 	
+	readToPosition(position, type = 'string'){
+		return this.read(position - this.position, type);
+	}
+	
+	readUntil(c_stop = '\0'){
+		let str = '';
+		let c;
+		while((c = this.read(1)) !== undefined){
+			str += c;
+			if(c === c_stop){
+				break;
+			}
+		}
+		return str;
+	}
+	
 	readArray(lens, type = 'string'){
 		var array = [];
 		for(var i = 0; i < lens.length; i++){

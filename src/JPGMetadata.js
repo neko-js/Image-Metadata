@@ -42,6 +42,7 @@ let JPGMetadata;
 
 		constructor(data, type = 'byte') {
 			let bsr = new ByteStreamReader(data, type);
+			this.filesize = bsr.getLength();
 			[this.chunks, this.structure] = this.readChunks(bsr);
 			this.parseChunks(this.chunks);
 		}
@@ -66,13 +67,12 @@ let JPGMetadata;
 					}
 				});
 			}
-			
+
 			// Calculate size of each chunk
 			structure.forEach((obj) => {
-				if(chunks[obj.name].distance[obj.index] > 0){
+				if (chunks[obj.name].distance[obj.index] > 0) {
 					obj.size = chunks[obj.name].distance[obj.index];
-				}
-				else{
+				} else {
 					obj.size = 0;
 				}
 			});
@@ -85,18 +85,16 @@ let JPGMetadata;
 				image_width: this.chunks.SOF0.data[0].image_width,
 				image_height: this.chunks.SOF0.data[0].image_height,
 				colorspace: this.chunks.SOF0.data[0].components.id,
+				colordepth: this.chunks.SOF0.data[0].components.number*8,
 				quality: this.chunks.DQT.quality,
-				comments: {}
+				comments: this.getStructure().filter(x => (x.name.indexOf('APP') === 0) || (x.name === 'COM')),
+				filesize: this.filesize,
 			};
 
-			for (let i = 0; i < 16; i++) {
-				let key = 'APP' + i;
-				if (this.chunks[key] !== undefined) {
-					info.comments[key] = {
-						size: this.chunks[key].size,
-					};
-				}
-			}
+			// Calculate compression ratio by comparing raw data size and file size of the SOS chunk
+			info.raw_data_size = info.image_width * info.image_height * info.colordepth/8;
+			info.data_size = this.chunks.SOS.distance[0];
+			info.compression = Math.round((1 - info.data_size / info.raw_data_size) * 100 * 100) / 100;
 
 			return info;
 		}
@@ -143,18 +141,18 @@ let JPGMetadata;
 					if (name_last_marker !== undefined) {
 						chunk[name_last_marker].distance.push(distance);
 					}
-					
+
 					// Skip compression data
 					if (name_last_marker !== undefined && name_last_marker !== 'SOS') {
-							bsr.skip(-distance - 2);
-							chunk[name_last_marker].data_raw.push(bsr.read(distance));
-							bsr.skip(+2);
+						bsr.skip(-distance - 2);
+						chunk[name_last_marker].data_raw.push(bsr.read(distance));
+						bsr.skip(+2);
 					}
 					if (name === 'SOS') {
 						// Skip to end - 1
 						bsr.setPosition(bsr.getLength() - 1);
 					}
-					
+
 					name_last_marker = name;
 					position_last_marker = position;
 

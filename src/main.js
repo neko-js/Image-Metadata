@@ -1,10 +1,11 @@
 var fs = require('fs');
 
-/* PNG
-var dataUri = base64_encode('test_images/2057921811589a1.png');
+/* PNG */
+var dataUri = base64_encode('test_images/ShereFASTticket-Test.png');
 var pmd = new PNGMetadata(dataUri, 'dataURI');
-console.log(pmd.getChunks());
-*/
+console.log('File Structure:', pmd.getStructure().filter((x) => x.index < 5));
+// console.log(pmd.getChunks());
+console.log('Metadata:', pmd.getMetadata());
 
 /* JPG */
 var dataUri = base64_encode('test_images/ShereFASTticket-Test.jpg');
@@ -13,7 +14,8 @@ var jmd = new JPGMetadata(dataUri, 'dataURI');
 console.log('File Structure:', jmd.getStructure());
 console.log('Metadata:', jmd.getMetadata());
 // console.log(jmd.getChunks().SOF0);
-// console.log(jmd.info);
+
+
 
 /* GIF 
 var dataUri = base64_encode('test_images/200px-Rotating_earth_(large).gif');
