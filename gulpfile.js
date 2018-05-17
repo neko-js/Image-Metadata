@@ -12,7 +12,7 @@ gulp.task('hint', function () {
 
 gulp.task('scripts', function () {
 	return gulp.src([
-			'src/gzip.js',
+			'lib/*.js',
 			'src/ByteStreamReader.js',
 			'src/JPGMetadata.js',
 			'src/PNGMetadata.js',

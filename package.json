@@ -23,6 +23,7 @@
     "jshint-stylish": "^2.2.1"
   },
   "dependencies": {
-    "atob": "^2.1.1"
+    "atob": "^2.1.1",
+    "text-encoding": "^0.6.4"
   }
 }
