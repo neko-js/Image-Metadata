@@ -5,7 +5,9 @@ var childProcess = require('child_process');
 
 gulp.task('hint', function () {
 
-	return gulp.src('src/*.js')
+	return gulp.src([
+			'src/*.js',
+			'test/*.js'])
 	.pipe(jshint())
 	.pipe(jshint.reporter('jshint-stylish'));
 });
@@ -14,21 +16,18 @@ gulp.task('scripts', function () {
 	return gulp.src([
 			'lib/*.js',
 			'src/ByteStreamReader.js',
-			'src/JPGMetadata.js',
-			'src/PNGMetadata.js',
-			'src/GIFMetadata.js',
-			'src/ImageMetadata.js',
+			'src/*.js'
 		])
 	.pipe(concat('app.js'))
 	.pipe(gulp.dest('dist/'));
 });
 
-gulp.task('scripts_dev', ['scripts'], function(){
+gulp.task('test', ['scripts'], function () {
 	return gulp.src([
-		'src/clientEmulator.js',
-		'dist/app.js',
-		'src/main.js'
-	])
+			'test/clientEmulator.js',
+			'dist/app.js',
+			'test/main.js'
+		])
 	.pipe(concat('app_dev.js'))
 	.pipe(gulp.dest('dist/'))
 });
@@ -37,8 +36,9 @@ gulp.task('run', function () {
 	runScript('dist/app_dev.js');
 });
 
-gulp.task('default', ['hint', 'scripts', 'scripts_dev'], function () {
-	gulp.watch('src/*.js', ['hint', 'scripts', 'scripts_dev', 'run']).on('change', function () {
+gulp.task('default', ['hint', 'scripts', 'test'], function () {
+	gulp.watch(['src/*.js', 'test/*.js'], ['hint', 'scripts', 'test', 'run'])
+	.on('change', function () {
 		console.log('\n------------------\n');
 		console.log('[' + new Date().toLocaleTimeString() + ']\n');
 	});
