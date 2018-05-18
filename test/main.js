@@ -31,14 +31,14 @@ console.log('File Structure:', pmd.getStructure().filter((x) => x.index < 5));
 console.log('Metadata:', pmd.getMetadata());
 */
 
-/* JPG
-dataUri = base64_encode('images/ShereFASTticket-Test.jpg');
+/* JPG */
+dataUri = base64_encode('test/images/ShereFASTticket-Test.jpg');
 jmd = new JPGMetadata(dataUri, 'dataURI');
 //console.log(jmd.getChunks().APP1);
 console.log('File Structure:', jmd.getStructure());
 console.log('Metadata:', jmd.getMetadata());
 // console.log(jmd.getChunks().SOF0);
-*/
+
 
 /* GIF
 dataUri = base64_encode('test/images/giphy.gif');

@@ -1,5 +1,5 @@
 {
-  "name": "imagemetadata",
+  "name": "image-metadata",
   "version": "1.0.0",
   "description": "Read metadata from image files. Only JPG, PNG and GIF.",
   "main": "index.js",
