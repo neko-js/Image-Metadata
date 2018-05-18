@@ -42,7 +42,7 @@ E.g. this will print out the following information:
 
 Other methods are:
 
-* `getStructure()`: Returns information about the file structure by putting all chunks and sizes in an array.
+* `getStructure(type = 'minimal')`: Returns information about the file structure by putting all chunks and sizes in an array. `type` can be `minimal` or `verbose`.
 
 * `getChunks()`: Returns an object where all chunks and information from the file are collected.
 
@@ -80,9 +80,9 @@ const GIFMetadata = require('image-metadata').GIFMetadata;
 
 * Optimize algorithm for skimming through JPG Markers.
 
-* Parse JPG textual application data (exif / ITPC / XMP / ...).
+* Parse textual application data (exif / ITPC / XMP / ...). A list of textual data can be found in this [tag list](https://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/) of [ExifTool](https://www.sno.phy.queensu.ca/~phil/exiftool/).
 
-* Maybe add `BMPMetadata`.
+* Maybe add support for BMP files.
 
 * Maybe add support for exotic image formats, such as [FLIF](http://flif.info/) and [WEBP](https://developers.google.com/speed/webp/).
 
