@@ -1,7 +1,7 @@
 {
-  "name": "chunkstreamreader",
+  "name": "imagemetadata",
   "version": "1.0.0",
-  "description": "Read chunks from a binary file.",
+  "description": "Read metadata from image files. Only JPG, PNG and GIF.",
   "main": "index.js",
   "scripts": {
     "test": "test/main.js"
