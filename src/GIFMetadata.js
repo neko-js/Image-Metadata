@@ -1,70 +1,46 @@
+if (typeof ByteStreamReader === 'undefined') {
+    ByteStreamReader = require('./ByteStreamReader').ByteStreamReader;
+}
+if (typeof GIFwrapper === 'undefined') {
+    GIFwrapper = require('../lib/gifuct-js').GIFwrapper;
+}
+
 
 class GIFMetadata {
-	constructor(data, type = 'byte') {
-		let bsr = new ByteStreamReader(data, type);
+    constructor(data, type = 'byte') {
+        let bsr = new ByteStreamReader(data, type);
 
-		// let byteArray = bsr.readAll().split('').map(x => x.charCodeAt(0));
-		let byteArray = this.toCharArray(bsr.readAll());
-		let gif = new GIFwrapper(byteArray);
-		let frames = gif.decompressFrames(true);
-		
-		console.log(frames[0]);
+        // let byteArray = bsr.readAll().split('').map(x => x.charCodeAt(0));
+        let byteArray = this.toCharArray(bsr.readAll());
+        let gif = new GIFwrapper(byteArray);
+        let frames = gif.decompressFrames(true);
 
-		// this.filesize = bsr.getLength();
-		// [this.chunks, this.structure] = this.readChunks(bsr);
-		// this.parseChunks(this.chunks);
-	}
+        console.log(frames[0]);
 
-	getChunks() {
-		return undefined;
-	}
+        // this.filesize = bsr.getLength();
+        // [this.chunks, this.structure] = this.readChunks(bsr);
+        // this.parseChunks(this.chunks);
+    }
 
-	toCharArray(str) {
-		const length = str.length;
-		if (length < 1) {
-			return [];
-		}
-		let i = 0;
-		const result = [];
-		do
-			result[i] = str.charCodeAt(i);
-		while (++i < length);
-		return result;
-	}
-}
+    getChunks() {
+        return undefined;
+    }
 
-/*
-class GIFMetadata {
-constructor(data, type = 'byte') {
-let bsr = new ByteStreamReader(data, type);
-this.chunks = this.readChunks(bsr);
+    toCharArray(str) {
+        const length = str.length;
+        if (length < 1) {
+            return [];
+        }
+        let i = 0;
+        const result = [];
+        do
+            result[i] = str.charCodeAt(i);
+        while (++i < length);
+        return result;
+    }
 }
 
-readChunks(bsr) {
-let chunk = {};
-let comma,
-length,
-position_last_comma = 0;
-while ((comma = bsr.readInt(1)) !== undefined) {
-if (comma === 0x2C) {
-length = bsr.readInt(1);
-bsr.skip(-1);
-// console.log(',', bsr.getPosition(), length);
-bsr.skip(length);
-
+if(typeof module !== 'undefined'){
+    // noinspection JSUnresolvedVariable
+    module.exports.GIFMetadata = GIFMetadata;
 }
-if (comma === 0x21) {
-// console.log('!', bsr.getPosition());
-}
-if (comma === 0x3B) {
-// console.log(';', bsr.getPosition());
-}
-}
-return chunk;
-}
-
-getChunks() {
-return this.chunks;
-}
-}
-*/
