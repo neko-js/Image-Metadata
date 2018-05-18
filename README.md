@@ -66,7 +66,7 @@ Install this library to your package.
 npm install https://github.com/smcgit/Image-Metadata.git --save
 ```
 
-Include it in your code.
+Include the classes from the image-metadata package in your code.
 
 ```javascript
 const JPGMetadata = require('image-metadata').JPGMetadata;
