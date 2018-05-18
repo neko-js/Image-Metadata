@@ -25,7 +25,7 @@ let jmd = new JPGMetadata('data:image/jpeg;base64,...', 'dataURI');
 Print meta information in console:
 
 ```javascript
-console.log(jmd.getMetadata());
+console.log( jmd.getMetadata() );
 ```
 
 E.g. this will print out the following information:
@@ -52,7 +52,7 @@ Other methods are:
 
 * `getChunks()`: Returns an object where all chunks and information from the file are collected.
 
-## Full Example
+### Full Browser Example
 
 This function reads out an URL to a JPG file as text via `XMLHttpRequest` and uses that information to print out the structure, chunks and meta information of the file.
 
