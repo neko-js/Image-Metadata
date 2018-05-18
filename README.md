@@ -2,7 +2,7 @@
 
 # Image Metadata
 
-This package makes it possible to read out simple or verbose meta and file structure information from image files.
+This package makes it possible to read out simple or verbose meta information from image files.
 
 It can be used in browser and Node.js environment.
 
