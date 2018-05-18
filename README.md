@@ -89,7 +89,7 @@ Create a script tag in the document `<head>`, where you include the JS file from
 <script src="/image_metadata.js" type="text/javascript"></script>
 ```
 
-You can use the minified version `image_data.min.js`, if desired.
+The minified version `image_data.min.js` can be used, if desired.
 
 ### Node.js
 
