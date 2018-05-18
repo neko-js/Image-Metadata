@@ -1299,6 +1299,7 @@ let JPGMetadata;
 
     const parseChunks = (chunks) => {
         parseSOF0(chunks.SOF0);
+        parseSOF0(chunks.SOF2);
         parseDQT(chunks.DQT);
         parseAPP0(chunks.APP0);
 
@@ -1363,11 +1364,16 @@ let JPGMetadata;
         getMetadata() {
             let chunks = this.getChunks();
 
+            let SOF = chunks.SOF0;
+            if(SOF === undefined){
+                SOF = chunks.SOF2;
+            }
+
             let info = {
-                image_width: chunks.SOF0.data[0].image_width,
-                image_height: chunks.SOF0.data[0].image_height,
-                colorspace: chunks.SOF0.data[0].components.id,
-                colordepth: chunks.SOF0.data[0].components.number * 8,
+                image_width: SOF.data[0].image_width,
+                image_height: SOF.data[0].image_height,
+                colorspace: SOF.data[0].components.id,
+                colordepth: SOF.data[0].components.number * 8,
                 quality: chunks.DQT.quality,
                 comments: this.getStructure().filter(x => (x.name.indexOf('APP') === 0) || (x.name === 'COM')),
                 filesize: this.getFileSize(),
