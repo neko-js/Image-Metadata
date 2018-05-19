@@ -1,10 +1,10 @@
-if(typeof atob === 'undefined'){
-	atob = require('atob');
+if (typeof atob === 'undefined') {
+    atob = require('atob');
 }
 
-let ByteStreamReader;
+let ByteStreamReader = (() => {
 
-(() => {
+    let wm = new WeakMap();
 
     const toInt = (array) => {
         let sum = 0;
@@ -24,102 +24,116 @@ let ByteStreamReader;
         return str.trim();
     };
 
-    class ByteStreamReaderClass {
-        constructor(data, type = 'byte') {
-            if (type.toLowerCase() === 'datauri') {
-                if (data.indexOf('data:') === 0) {
-                    data = data.substr(data.indexOf(','), data.length);
-                }
-                data = atob(data);
+    function ByteStreamReader(data, type = 'byte') {
+        if (type.toLowerCase() === 'datauri') {
+            if (data.indexOf('data:') === 0) {
+                data = data.substr(data.indexOf(','), data.length);
             }
-            this.byteArray = data; // is just a string
-            this.position = 0;
+            data = atob(data);
         }
+        wm.set(this, {
+            byteArray: data,
+            position: 0
+        });
+    }
 
-        // noinspection JSUnusedGlobalSymbols
-        reset() {
-            this.position = 0;
-        }
+    function reset() {
+        wm.get(this).position = 0;
+    }
 
-        // noinspection JSUnusedGlobalSymbols
-        skip(len) {
-            this.position += len;
-        }
+    function skip(len) {
+        wm.get(this).position += len;
+    }
 
-        setPosition(position) {
-            this.position = position;
-        }
+    function setPosition(position) {
+        wm.get(this).position = position;
+    }
 
-        getPosition() {
-            return this.position;
-        }
+    function getPosition() {
+        return wm.get(this).position;
+    }
 
-        getLength() {
-            return this.byteArray.length;
-        }
+    function getLength(){
+        return wm.get(this).byteArray.length;
+    }
 
-        read(len, type = 'string') {
-            if (this.position < this.byteArray.length) {
-                let array = this.byteArray.slice(this.position, this.position + len);
-                this.position += len;
-                switch (type) {
-                    case 'int':
-                        array = toInt(array);
-                        break;
-                    case 'hex':
-                        array = toHex(array);
-                        break;
-                }
-                return array;
-            } else {
-                this.position += len;
-                return undefined;
-            }
-        }
+    function read(len, type = 'string') {
+        let position = wm.get(this).position;
+        let byteArray = wm.get(this).byteArray;
 
-        readToPosition(position, type = 'string'){
-            return this.read(position - this.position, type);
-        }
-
-        readUntil(c_stop = '\0'){
-            let str = '';
-            let c;
-            while((c = this.read(1)) !== undefined){
-                str += c;
-                if(c === c_stop){
+        if (position < byteArray.length) {
+            let array = byteArray.slice(position, position + len);
+            skip.call(this, len);
+            switch (type) {
+                case 'int':
+                    array = toInt(array);
                     break;
-                }
-            }
-            return str;
-        }
-
-        // noinspection JSUnusedGlobalSymbols
-        readArray(lens, type = 'string'){
-            let array = [];
-            for(let i = 0; i < lens.length; i++){
-                array.push(this.read(lens[i], type));
+                case 'hex':
+                    array = toHex(array);
+                    break;
             }
             return array;
-        }
-
-        readAll() {
-            return this.byteArray;
-        }
-
-        readInt(len) {
-            let array = this.read(len);
-            if (array === undefined) {
-                return undefined;
-            }
-            return toInt(array);
+        } else {
+            skip.call(this, len);
+            return undefined;
         }
     }
 
-    ByteStreamReader = ByteStreamReaderClass;
+    function readToPosition(position, type = 'string') {
+        return read.call(this, position - getPosition(), type);
+    }
+
+    function readUntil(c_stop = '\0') {
+        let str = '';
+        let c;
+        while ((c = read.call(this, 1)) !== undefined) {
+            str += c;
+            if (c === c_stop) {
+                break;
+            }
+        }
+        return str;
+    }
+
+    function readArray(lens, type = 'string') {
+        let array = [];
+        for (let i = 0; i < lens.length; i++) {
+            array.push(read.call(this, lens[i], type));
+        }
+        return array;
+    }
+
+    function readAll() {
+        return wm.get(this).byteArray;
+    }
+
+    function readInt(len) {
+        let array = read.call(this, len);
+        if (array === undefined) {
+            return undefined;
+        }
+        return toInt(array);
+    }
+
+    ByteStreamReader.prototype = {
+        reset,
+        skip,
+        setPosition,
+        getPosition,
+        getLength,
+        read,
+        readToPosition,
+        readUntil,
+        readArray,
+        readAll,
+        readInt
+    };
+
+    return ByteStreamReader;
 
 })();
 
-if(typeof module !== 'undefined'){
-	// noinspection JSUnresolvedVariable
+if (typeof module !== 'undefined') {
+    // noinspection JSUnresolvedVariable
     module.exports.ByteStreamReader = ByteStreamReader;
 }
