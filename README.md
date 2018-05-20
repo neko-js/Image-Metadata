@@ -96,7 +96,7 @@ The minified version `image_metadata.min.js` can be used, if desired.
 Install this library to your package.
 
 ```
-npm install https://github.com/smcgit/Image-Metadata.git --save
+npm install git+https://github.com/smcgit/Image-Metadata.git --save
 ```
 
 Include the classes from the image-metadata package in your code.
