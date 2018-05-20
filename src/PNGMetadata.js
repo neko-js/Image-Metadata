@@ -2,9 +2,7 @@ if (typeof ByteStreamReader === 'undefined') {
     ByteStreamReader = require('./ByteStreamReader').ByteStreamReader;
 }
 
-let PNGMetadata;
-
-(() => {
+let PNGMetadata = (() => {
 
     const parseIHDR = (IHDR, tRNS) => {
         if (IHDR === undefined) {
@@ -112,59 +110,65 @@ let PNGMetadata;
         parseiCCP(chunks.iCCP);
     };
 
-    let _chunks, _structure, _filesize;
+    let wm = new WeakMap();
 
-    class PNGMetadataClass {
+    function PNGMetadata(data, type = 'byte') {
+        let bsr = new ByteStreamReader(data, type);
+        let filesize = bsr.getLength();
+        let [chunks, structure] = readChunks(bsr);
+        parseChunks(chunks);
 
-        constructor(data, type = 'byte') {
-            let bsr = new ByteStreamReader(data, type);
-            _filesize = bsr.getLength();
-            [_chunks, _structure] = readChunks(bsr);
-            parseChunks(_chunks);
-        }
-
-        // noinspection JSMethodCanBeStatic
-        getChunks() {
-            return _chunks;
-        }
-
-        // noinspection JSMethodCanBeStatic
-        getStructure() {
-            return [..._structure];
-        }
-
-        // noinspection JSMethodCanBeStatic
-        getFileSize(){
-            return _filesize;
-        }
-
-        // noinspection JSUnusedGlobalSymbols
-        getMetadata() {
-            let chunks = this.getChunks();
-
-            let info = {
-                image_width: chunks.IHDR.data[0].image_width,
-                image_height: chunks.IHDR.data[0].image_height,
-                colorspace: chunks.IHDR.data[0].color_type,
-                colordepth: chunks.IHDR.data[0].color_depth,
-                quality: 'lossless',
-                comments: this.getStructure().filter(x => ['tEXt', 'zTXt', 'iTXt', 'tIME'].includes(x.name)),
-                filesize: this.getFileSize(),
-            };
-
-            // Calculate estimated compression level by putting raw data size and file size in relation
-            info.data_size = this.getStructure()
-                .filter(x => x.name === 'IDAT')
-                .map(x => x.size)
-                .reduce((a, b) => a + b);
-            info.raw_data_size = info.image_width * info.image_height * info.colordepth / 8;
-            info.compression = Math.round((1 - info.data_size / info.raw_data_size) * 100 * 100) / 100;
-
-            return info;
-        }
+        wm.set(this, {
+            filesize,
+            chunks,
+            structure
+        });
     }
 
-    PNGMetadata = PNGMetadataClass;
+    function getChunks(){
+        return wm.get(this).chunks;
+    }
+
+    function getStructure(){
+        return [...wm.get(this).structure];
+    }
+
+    function getFileSize(){
+        return wm.get(this).filesize;
+    }
+
+    function getMetadata() {
+        let chunks = getChunks.call(this);
+
+        let info = {
+            image_width: chunks.IHDR.data[0].image_width,
+            image_height: chunks.IHDR.data[0].image_height,
+            colorspace: chunks.IHDR.data[0].color_type,
+            colordepth: chunks.IHDR.data[0].color_depth,
+            quality: 'lossless',
+            comments: getStructure.call(this).filter(x => ['tEXt', 'zTXt', 'iTXt', 'tIME'].includes(x.name)),
+            filesize: getFileSize.call(this),
+        };
+
+        // Calculate estimated compression level by putting raw data size and file size in relation
+        info.data_size = this.getStructure()
+            .filter(x => x.name === 'IDAT')
+            .map(x => x.size)
+            .reduce((a, b) => a + b);
+        info.raw_data_size = info.image_width * info.image_height * info.colordepth / 8;
+        info.compression = Math.round((1 - info.data_size / info.raw_data_size) * 100 * 100) / 100;
+
+        return info;
+    }
+
+    PNGMetadata.prototype = {
+        getStructure,
+        getChunks,
+        getMetadata,
+        getFileSize
+    };
+
+    return PNGMetadata;
 
 })();
 

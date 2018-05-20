@@ -26,7 +26,7 @@ let ByteStreamReader = (() => {
 
     function ByteStreamReader(data, type = 'byte') {
         if (type.toLowerCase() === 'datauri') {
-            if (data.indexOf('data:') === 0) {
+            if (data.startsWith('data:')) {
                 data = data.substr(data.indexOf(','), data.length);
             }
             data = atob(data);
@@ -80,7 +80,7 @@ let ByteStreamReader = (() => {
     }
 
     function readToPosition(position, type = 'string') {
-        return read.call(this, position - getPosition(), type);
+        return read.call(this, position - getPosition.call(this), type);
     }
 
     function readUntil(c_stop = '\0') {

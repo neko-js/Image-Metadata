@@ -2,9 +2,7 @@ if(typeof ByteStreamReader === 'undefined'){
     ByteStreamReader = require('./ByteStreamReader').ByteStreamReader;
 }
 
-let JPGMetadata;
-
-(() => {
+let JPGMetadata = (() => {
 
     const JPGMarkers = {
         0xD8: 'SOI', // Start Of Image
@@ -322,85 +320,95 @@ let JPGMetadata;
         }
     };
 
+    let wm = new WeakMap();
+
     let _chunks, _structure, _filesize;
 
-    class JPGMetadataClass {
+    function JPGMetadata(data, type = 'byte'){
+        let bsr = new ByteStreamReader(data, type);
+        let filesize = bsr.getLength();
+        let [chunks, structure] = readChunks(bsr);
+        parseChunks(chunks);
 
-        constructor(data, type = 'byte') {
-            let bsr = new ByteStreamReader(data, type);
-            _filesize = bsr.getLength();
-            [_chunks, _structure] = readChunks(bsr);
-            parseChunks(_chunks);
-        }
-
-        // noinspection JSMethodCanBeStatic
-        getChunks() {
-            return _chunks;
-        }
-
-        getStructure(type = 'minimal') {
-            let structure = [..._structure];
-            let chunks = this.getChunks();
-
-            // If file structure should be displayed verbose, put all chunks into structure.
-            if (type.toLowerCase() === 'verbose') {
-                structure.forEach((obj) => {
-                    for (let key in chunks[obj.name]) {
-                        if (['position', 'length', 'distance', 'data', 'data_raw'].includes(key)) {
-                            obj[key] = chunks[obj.name][key][obj.index];
-                        } else {
-                            obj[key] = chunks[obj.name][key];
-                        }
-                    }
-                });
-            }
-
-            // Calculate size of each chunk
-            structure.forEach((obj) => {
-                if (chunks[obj.name].distance[obj.index] > 0) {
-                    obj.size = chunks[obj.name].distance[obj.index];
-                } else {
-                    obj.size = 0;
-                }
-            });
-
-            return structure;
-        }
-
-        // noinspection JSUnusedGlobalSymbols
-        getMetadata() {
-            let chunks = this.getChunks();
-
-            let SOF = chunks.SOF0;
-            if(SOF === undefined){
-                SOF = chunks.SOF2;
-            }
-
-            let info = {
-                image_width: SOF.data[0].image_width,
-                image_height: SOF.data[0].image_height,
-                colorspace: SOF.data[0].components.id,
-                colordepth: SOF.data[0].components.number * 8,
-                quality: chunks.DQT.quality,
-                comments: this.getStructure().filter(x => (x.name.indexOf('APP') === 0) || (x.name === 'COM')),
-                filesize: this.getFileSize(),
-            };
-
-            // Calculate compression ratio by comparing raw data size and file size of the SOS chunk
-            info.data_size = chunks.SOS.distance[0];
-            info.raw_data_size = info.image_width * info.image_height * info.colordepth / 8;
-            info.compression = Math.round((1 - info.data_size / info.raw_data_size) * 100 * 100) / 100;
-
-            return info;
-        }
-
-        // noinspection JSMethodCanBeStatic
-        getFileSize() {
-            return _filesize;
-        }
+        wm.set(this, {
+            filesize,
+            chunks,
+            structure
+        });
     }
 
-    JPGMetadata = JPGMetadataClass;
+    function getChunks(){
+        return wm.get(this).chunks;
+    }
+
+    function getStructure(type = 'minimal') {
+        let structure = [...wm.get(this).structure];
+        let chunks = getChunks.call(this);
+
+        // If file structure should be displayed verbose, put all chunks into structure.
+        if (type.toLowerCase() === 'verbose') {
+            structure.forEach((obj) => {
+                for (let key in chunks[obj.name]) {
+                    if (['position', 'length', 'distance', 'data', 'data_raw'].includes(key)) {
+                        obj[key] = chunks[obj.name][key][obj.index];
+                    } else {
+                        obj[key] = chunks[obj.name][key];
+                    }
+                }
+            });
+        }
+
+        // Calculate size of each chunk
+        structure.forEach((obj) => {
+            if (chunks[obj.name].distance[obj.index] > 0) {
+                obj.size = chunks[obj.name].distance[obj.index];
+            } else {
+                obj.size = 0;
+            }
+        });
+
+        return structure;
+    }
+
+    function getMetadata() {
+        let chunks = getChunks.call(this);
+
+        let SOF = chunks.SOF0;
+        if(SOF === undefined){
+            SOF = chunks.SOF2;
+        }
+
+        let info = {
+            image_width: SOF.data[0].image_width,
+            image_height: SOF.data[0].image_height,
+            colorspace: SOF.data[0].components.id,
+            colordepth: SOF.data[0].components.number * 8,
+            quality: chunks.DQT.quality,
+            comments: getStructure.call(this).filter(x => (x.name.indexOf('APP') === 0) || (x.name === 'COM')),
+            filesize: getFileSize.call(this),
+        };
+
+        // Calculate compression ratio by comparing raw data size and file size of the SOS chunk
+        info.data_size = chunks.SOS.distance[0];
+        info.raw_data_size = info.image_width * info.image_height * info.colordepth / 8;
+        info.compression = Math.round((1 - info.data_size / info.raw_data_size) * 100 * 100) / 100;
+
+        return info;
+    }
+
+    // noinspection JSMethodCanBeStatic
+    function getFileSize() {
+        return wm.get(this).filesize;
+    }
+
+    JPGMetadata.prototype = {
+        getChunks,
+        getStructure,
+        getMetadata,
+        getFileSize
+    };
+
+    return JPGMetadata;
 
 })();
 
