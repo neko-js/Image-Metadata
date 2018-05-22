@@ -1,5 +1,3 @@
-**Currently under development...**
-
 # Image Metadata
 
 This package makes it possible to read out simple or verbose meta information from image files.
@@ -111,6 +109,8 @@ const GIFMetadata = require('image-metadata').GIFMetadata;
 
 * Optimize algorithm for skimming through JPG Markers.
 
+* Standardize file structure and chunks information, along all formats.
+
 * Parse textual application data (exif / ITPC / XMP / ...). A list of textual data can be found in this [tag list](https://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/) of [ExifTool](https://www.sno.phy.queensu.ca/~phil/exiftool/).
 
 * Maybe add support for BMP files.
@@ -123,11 +123,13 @@ This package is still in development and might only work for common files. There
 
 ## Credits
 
-This project uses following libraries:
-
-* [gifuct-js](https://github.com/matt-way/gifuct-js)
+Thanks to the JavaScript community!
 
 ## Inspired by
 
-* [ImageMagick](https://github.com/ImageMagick/ImageMagick)
 * [exif-js](https://github.com/exif-js/exif-js)
+* [gifuct-js](https://github.com/matt-way/gifuct-js)
+* [gif-engine-js](https://github.com/friendlyanon/gif-engine-js)
+* [ImageMagick](https://github.com/ImageMagick/ImageMagick)
+* [lzw_encoder.js](https://gist.github.com/revolunet/843889#file-lzw_encoder-js)
+

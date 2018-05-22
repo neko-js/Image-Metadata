@@ -125,15 +125,15 @@ let PNGMetadata = (() => {
         });
     }
 
-    function getChunks(){
+    function getChunks() {
         return wm.get(this).chunks;
     }
 
-    function getStructure(){
+    function getStructure() {
         return [...wm.get(this).structure];
     }
 
-    function getFileSize(){
+    function getFileSize() {
         return wm.get(this).filesize;
     }
 

@@ -24,24 +24,35 @@ const base64_decode = (base64str, file) => {
 let dataUri, pmd, jmd, gmd;
 
 /* PNG
-dataUri = base64_encode('images/ShereFASTticket-Test.png');
+dataUri = base64_encode('../test/images/ShereFASTticket-Test.png');
 pmd = new PNGMetadata(dataUri, 'dataURI');
 console.log('File Structure:', pmd.getStructure().filter((x) => x.index < 5));
 // console.log(pmd.getChunks());
 console.log('Metadata:', pmd.getMetadata());
 */
 
-/* JPG */
-dataUri = base64_encode('test/images/ShereFASTticket-Test.jpg');
+/* JPG
+dataUri = base64_encode('../test/images/ShereFASTticket-Test.jpg');
 jmd = new JPGMetadata(dataUri, 'dataURI');
 //console.log(jmd.getChunks().APP1);
 console.log('File Structure:', jmd.getStructure());
 console.log('Metadata:', jmd.getMetadata());
 // console.log(jmd.getChunks().SOF0);
-
-
-/* GIF
-dataUri = base64_encode('test/images/giphy.gif');
-gmd = new GIFMetadata(dataUri, 'dataURI');
-console.log(gmd.getChunks());
 */
+
+/* GIF */
+dataUri = base64_encode('test/images/giphy.gif');
+// dataUri = base64_encode('../test/images/200px-Rotating_earth_(large).gif');
+// dataUri = base64_encode('../test/images/Skull_trumpet.gif');
+gmd = new GIFMetadata(dataUri, 'dataURI');
+let structure = gmd.getChunks('verbose');
+// console.log(structure);
+console.log(gmd.getMetadata());
+// console.log('header', gmd.getChunks().header);
+// console.log('gct', gmd.getChunks().global_color_table);
+
+const obj2dataURI = (obj) => {
+    return ('data:application/json;base64,' + new Buffer.from(JSON.stringify(obj)).toString('base64'));
+};
+
+console.log(obj2dataURI(structure));

@@ -24,6 +24,14 @@ let ByteStreamReader = (() => {
         return str.trim();
     };
 
+    const reverseString = (str) => {
+        let newString = "";
+        for (let i = str.length - 1; i >= 0; i--) {
+            newString += str[i];
+        }
+        return newString;
+    };
+
     function ByteStreamReader(data, type = 'byte') {
         if (type.toLowerCase() === 'datauri') {
             if (data.startsWith('data:')) {
@@ -53,7 +61,7 @@ let ByteStreamReader = (() => {
         return wm.get(this).position;
     }
 
-    function getLength(){
+    function getLength() {
         return wm.get(this).byteArray.length;
     }
 
@@ -86,9 +94,15 @@ let ByteStreamReader = (() => {
     function readUntil(c_stop = '\0') {
         let str = '';
         let c;
+        if(typeof(c_stop) === 'string'){
+            c_fun = c => c === c_stop;
+        }
+        else{
+            c_fun = c_stop;
+        }
         while ((c = read.call(this, 1)) !== undefined) {
             str += c;
-            if (c === c_stop) {
+            if (c_fun(c)) {
                 break;
             }
         }
@@ -108,9 +122,27 @@ let ByteStreamReader = (() => {
     }
 
     function readInt(len) {
-        let array = read.call(this, len);
+        let len_int = len;
+        if(typeof(len) === 'string'){
+            switch(len){
+                case 'byte':
+                    len_int = len = 1;
+                    break;
+                case 'word':
+                    len_int = 2;
+                    break;
+                case 'dword':
+                    len_int = 4;
+                    break;
+            }
+        }
+        let array = read.call(this, len_int);
         if (array === undefined) {
             return undefined;
+        }
+        // TODO: Reversing String is slower than in for-loop in toInt (replace)
+        if(typeof(len) === 'string'){
+            array = reverseString(array);
         }
         return toInt(array);
     }
