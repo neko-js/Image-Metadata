@@ -105,21 +105,9 @@ const PNGMetadata = require('image-metadata').PNGMetadata;
 const GIFMetadata = require('image-metadata').GIFMetadata;
 ```
 
-## ToDo
-
-* Optimize algorithm for skimming through JPG Markers.
-
-* Standardize file structure and chunks information, along all formats.
-
-* Parse textual application data (exif / ITPC / XMP / ...). A list of textual data can be found in this [tag list](https://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/) of [ExifTool](https://www.sno.phy.queensu.ca/~phil/exiftool/).
-
-* Maybe add support for BMP files.
-
-* Maybe add support for exotic image formats, such as [FLIF](http://flif.info/) and [WEBP](https://developers.google.com/speed/webp/).
-
 ## Disclaimer
 
-This package is still in development and might only work for common files. There are some special cases, where the script might break.
+This package might only work for common files. There are some special cases, where the script might break.
 
 ## Credits
 
